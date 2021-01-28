@@ -1,0 +1,63 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid">
+    {% include 'common/messages.html' %}
+    <nav aria-label="breadcrumb " class="mt-2"> 
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">New Teacher</li>
+        </ol>
+      </nav>
+      <form style="width:70%; margin: auto;" method="post" enctype='multipart/form-data'>
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="FirstName">{{form.first_name.label}} <span class="text-danger">*</span> </label>
+          {{form.first_name}}
+          
+          <small class="form-text text-danger">{{form.first_name.errors}}</small>
+        </div>
+
+        <div class="form-group">
+            <label for="LastName">{{form.last_name.label}}<span class="text-danger">*</span></label>
+            {{form.last_name}}
+            
+            <small  class="form-text text-danger">{{form.last_name.errors}}</small>
+          </div>
+          <div class="form-group">
+            <label for="Email">{{form.email.label}}<span class="text-danger">*</span></label>
+            {{form.email}}
+            
+            <small  class="form-text text-danger">{{form.email.errors}}</small>
+          </div>
+          <div class="form-group">
+            <label for="phone_number">{{form.phone_number.label}}</label>
+            {{form.phone_number}}
+            
+            <small  class="form-text text-danger">{{form.phone_number.errors}}</small>
+          </div>
+          <div class="form-group">
+            <label for="room_number">{{form.room_number.label}}<span class="text-danger">*</span></label>
+            {{form.room_number}}
+            
+            <small  class="form-text text-danger">{{form.room_number.errors}}</small>
+          </div>
+
+          <div class="">
+            <label for="subjects_taught">Subjects (Maximum 5)</label>
+            {{form.subjects_taught}}
+            
+            <small  class="form-text text-danger">{{form.subjects_taught.errors}}</small>
+          </div>
+          <div class="form-group">
+            <label for="profile_picture">{{form.profile_picture.label}}</label>
+            {{form.profile_picture}}
+            
+            <small  class="form-text text-danger">{{form.profile_picture.errors}}</small>
+          </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <a  href="{% url 'teachers' %}" class="btn btn-danger">Cancel</a>
+      </form>
+</div>
+{% endblock content %}

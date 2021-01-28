@@ -1,0 +1,16 @@
+{% extends 'common/base.html' %} {% load static %} {% block content %}
+
+<div class="container-fluid">
+  {% include 'common/messages.html' %}
+  <nav aria-label="breadcrumb " class="mt-2">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Profile</li>
+    </ol>
+  </nav>
+  <div>
+    Name:{{object.first_name}} <br>
+    Email:{{object.email}}
+  </div>
+</div>
+{% endblock content %}

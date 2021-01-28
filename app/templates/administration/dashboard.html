@@ -1,0 +1,28 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container-fluid mt-5">
+  {% include 'common/messages.html' %}
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Teachers</h5>
+          <p class="card-text">{{teachers_count}}</p>
+          <a href="{% url 'teachers' %}" class="btn btn-primary">View All</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Subjects</h5>
+          <p class="card-text">{{ subjects_count}}</p>
+          <a href="{% url 'subjects' %}" class="btn btn-primary">View All</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  {% endblock content %}
+  

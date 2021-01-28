@@ -1,0 +1,33 @@
+<div class="section-notifications" id="notifications">
+    {% for message in messages %}
+        {% if forloop.last %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success">
+                    <div class="container-fluid">
+                        <button type="button" class="close updated_toaster_success" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true"><i class="glyphicon glyphicon-remove"></i></span>
+                        </button>
+                        {{ message }}
+                    </div>
+                </div>
+            {% elif message.tags == 'error' %}
+                <div class="alert alert-danger">
+                    <div class="container-fluid">
+                        <button type="button" class="close updated_toaster_error" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true"><i class="glyphicon glyphicon-remove"></i></span>
+                        </button>
+                        {{ message }}
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endfor %}    
+</div>
+<script>
+    window.setTimeout(function() {
+        $(".alert").fadeTo(1000, 0).slideUp(1000, function(){
+            $(this).remove();
+        });
+    }, 2000);
+</script> 
+

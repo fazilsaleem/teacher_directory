@@ -1,0 +1,143 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid">
+    {% include 'common/messages.html' %}
+    <nav aria-label="breadcrumb " class="mt-2"> 
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Teachers</li>
+        </ol>
+      </nav>
+    <div class="row m-2" >
+        <div class="col-md-12">
+            <a href="{% url 'new-teacher' %}" class="btn btn-primary float-right m-2">Add Teacher</a>
+            <a href="" class="btn btn-primary float-right m-2" data-toggle="modal" data-target="#teacherModal">Import Json Data</a>
+            <a href="" class="btn btn-primary float-right m-2" data-toggle="modal" data-target="#imageModal">Upload Profile Pictures</a>
+        </div>
+    </div>
+    <form method="GET" action="">
+    <div class="row">
+        <div class="form-group" style=" width:50%;display: flex;flex-direction: row;justify-content: space-evenly;align-items: center;">
+          <input type="text"  name="lname_filter" id="lname_filter" placeholder="Search by last name's first letter" class="form-control m-2">
+          <select name="subjects_taught" id="subjects_taught" class="form-control">
+            <option value="">Choose a subject to filter</option>
+            {% for subject in subjects %}
+            <option value="{{subject.id}}">{{subject.subject_name}}</option>
+            {% endfor %}
+          </select>
+          <input type="submit" class=" m-2 btn btn-primary" value="Search">
+      </div>
+      </div>
+    </div>
+  </form>
+<table class="table table-striped border-bottom">
+    {% if teachers %}
+    <thead>
+      <tr>
+        <th scope="col">Image</th>
+        <th scope="col">Name</th>
+        <th scope="col">Email</th>
+        <th scope="col">Phone Number</th>
+        <th scope="col">Room No.</th>
+        <th scope="col">Subjects</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for teacher in teachers %}
+      <tr>
+        <th scope="row">
+            {% if teacher.profile_picture %}
+            <img src="{{teacher.profile_picture.url}}" alt="" width=50 height=50>
+            {% else %}
+            <img src="{% static '/assets/images/avtar.png' %}" alt="" width=50 height=50>
+            {% endif %}
+            <br>
+        </th>
+        <td>{{teacher.first_name}} {{teacher.last_name}}</td>
+        <td>
+            {{teacher.email}}
+        </td>
+        <td>
+            {{teacher.phone_number}}
+        </td>
+        <td>
+            {{teacher.room_number}}
+        </td>
+        <td>
+           {% if teacher.subjects_taught %}
+           {% for subject in teacher.subjects_taught.all %}
+           {{subject}}<br>
+           {% endfor %}
+           {% else %}
+           <td>
+               Not assigned.
+           </td>
+           {% endif %}
+        </td>
+        <td >
+            <a href="{% url 'delete-teacher' teacher.id %}" onclick="confirm('Are you sure to delete this teacher?');" class="text-danger">Delete</a><br>
+            <a href="{% url 'profile' teacher.id %}"  class="text-primary">Details</a><br>
+            <a href="{% url 'edit-teacher' teacher.id %}"  class="text-primary">Edit</a>
+        </td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr>No data found.</tr>
+      {% endif %}
+    </tbody>
+</table>
+</div>
+<div class="modal fade" id="teacherModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Please select a CSV file to upload.</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <form action="{% url 'import-csv' %}" method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="form-group">
+                <input type="file" id="csv_import" name="csv_import">
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Save</button>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Please select multiple files to upload.</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <form action="{% url 'import-images' %}" method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="form-group">
+                <input type="file" id="image_import" name="image_import" multiple>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Save</button>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
