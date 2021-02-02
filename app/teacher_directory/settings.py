@@ -130,5 +130,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGIN_URL = 'login'
-
+MAX_SUBJECT = 5
+CSV_ORDER = {'FNAME':0,
+            'LNAME':1,
+            'IMG':2,
+            'EMAIL':3,
+            'PHONE':4,
+            'ROOM':5,
+            'SUBJECTS':6}
 

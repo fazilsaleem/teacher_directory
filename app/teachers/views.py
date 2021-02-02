@@ -18,10 +18,11 @@ from django.conf import settings
 import os
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from zipfile import ZipExtFile, ZipFile
+
 
 @method_decorator(login_required, name="dispatch")
 class SubjectsListView(ListView):
-
     """
     Available subjects list
     """
@@ -30,7 +31,7 @@ class SubjectsListView(ListView):
 
     def get_context_data(self, **kwargs):
             context = super().get_context_data(**kwargs)
-            query_set = self.model.objects.filter(is_active=True)
+            query_set = self.model.objects.filter(is_active=True).order_by('subject_name')
             context['subjects'] = query_set
             return context
 
@@ -42,6 +43,9 @@ class DeleteSubjectView(View):
 
     def get(self, request, subject_id):
         try:
+            if Teachers.objects.filter(subjects_taught__in =  [subject_id]).exists():
+                messages.error(request, self.mesg_obj.SUBJECT_DATA_EXISTS)
+                return redirect(self.redirect_url)
             self.model.objects.get(id=subject_id).delete()
             messages.success(request, self.mesg_obj.SUBJECT_DELETED)
             return redirect(self.redirect_url)
@@ -64,10 +68,8 @@ class AddSubjectView(View):
             messages.error(request,self.mesg_obj.SUBJECT_NOTCREATED )
         return redirect(self.success_url)
 
-
 @method_decorator(login_required, name="dispatch")
 class TeachersListView(ListView):
-
     """
     Available subjects list
     """
@@ -108,7 +110,6 @@ class DeleteTeacherView(View):
             messages.error(request, self.mesg_obj.TEACHER_NOT_FOUND)
             return redirect(self.redirect_url)
             
-
 @method_decorator(login_required, name="dispatch")
 class AddTeacherView(generic.FormView):
     template_name = "teachers/create-teacher.html"
@@ -144,14 +145,11 @@ class EditTeacherView(generic.UpdateView):
     def get_success_url(self):
         return "/directory/teachers"
 
-
-
 @method_decorator(login_required, name="dispatch")
 class ChangePictureView(View):
 
     def post(self, request, pk):
         profile_picture = request.FILES.get("profile_picture")
-        print(profile_picture)
         try:
             teacher_obj = Teachers.objects.get(id=pk)
         except:
@@ -165,63 +163,52 @@ class TeacherProfileView(generic.DetailView):
     template_name = "teachers/profile.html"
     model = Teachers
 
-
 @method_decorator(login_required, name="dispatch")
-class CSVImportView(View):
+class DataImportView(View):
     redirect_url = "teachers"
     mesg_obj = BaseMessages()
     def post(self, request):
-        csv_file = request.FILES['csv_import']
-        if not csv_file.name.endswith('.csv'):
-            messages.error(request,self.mesg_obj.NOT_CSV)
-            return redirect(self.redirect_url)
-        teacher_data = csv_file.read().decode('UTF-8')
-        buff_str = io.StringIO(teacher_data)
-        next(buff_str)
-        for column in csv.reader(buff_str, delimiter=',', quotechar='"'):
-            if column[0]:
-                if Teachers.objects.filter(email=column[3]).exists():
-                    print("email exists")
-                    continue
-                teacher_object = Teachers()
-                teacher_object.first_name = column[0]
-                teacher_object.last_name = column[1]
-                column[2] = ' '.join(column[2].split())
-                print("column2 is", column[2])
-                if column[2]:
-                    teacher_object.profile_picture = f'teacher_profile/{column[2]}'
-                else:
-                    teacher_object.profile_picture = None
-                teacher_object.email = column[3]
-                teacher_object.phone_number = column[4]
-                teacher_object.room_number = column[5]
-                teacher_object.save()
-                subjects = column[6]
-                subject_obj_list = []
-                for subject in subjects.split(','):
-                    subject_string = subject.strip().title()
-                    subject_obj = None
-                    subject_obj = Subjects.objects.filter(subject_name=subject_string).last()
-                    if not subject_obj:
-                        subject_obj = Subjects.objects.create(subject_name=subject_string)
-                    subject_obj_list.append(subject_obj)   
-                for ind, subj in enumerate(subject_obj_list):
-                    #take only first 5 subjects
-                    if ind <5:
-                        teacher_object.subjects_taught.add(subj)
-                teacher_object.save()
+        uploaded_files = request.FILES.getlist('data_import')
+        for file_item in uploaded_files:
+            if file_item.name.endswith('.zip'):
+                with ZipFile(file_item,'r') as images:
+                    images.extractall(f'{settings.MEDIA_ROOT}/teacher_profile')
+            elif file_item.name.endswith('.csv'):
+                FNAME,LNAME,IMG,EMAIL,PHONE,ROOM,SUBJECTS = settings.CSV_ORDER.values()
+                teacher_data = file_item.read().decode('UTF-8')
+                buff_str = io.StringIO(teacher_data)
+                next(buff_str)
+                for column in csv.reader(buff_str, delimiter=',', quotechar='"'):
+                    if column[0]:
+                        if Teachers.objects.filter(email=column[EMAIL]).exists():
+                            continue
+                        teacher_object = Teachers()
+                        teacher_object.first_name = column[FNAME]
+                        teacher_object.last_name = column[LNAME]
+                        column[IMG] = ' '.join(column[IMG].split())
+                        if column[IMG]:
+                            teacher_object.profile_picture = f'teacher_profile/{column[IMG]}'
+                        else:
+                            teacher_object.profile_picture = None
+                        teacher_object.email = column[EMAIL]
+                        teacher_object.phone_number = column[PHONE]
+                        teacher_object.room_number = column[ROOM]
+                        teacher_object.save()
+                        subjects = column[SUBJECTS]
+                        subject_obj_list = []
+                        for subject in subjects.split(','):
+                            subject_string = subject.strip().title()
+                            subject_obj = None
+                            subject_obj = Subjects.objects.filter(subject_name=subject_string).last()
+                            if not subject_obj:
+                                subject_obj = Subjects.objects.create(subject_name=subject_string)
+                            subject_obj_list.append(subject_obj)   
+                        for ind, subj in enumerate(subject_obj_list):
+                            if ind <settings.MAX_SUBJECT:
+                                teacher_object.subjects_taught.add(subj)
+                        teacher_object.save()
         return redirect(self.redirect_url)
 
-@method_decorator(login_required, name="dispatch")
-class ImagesImportView(View):
-    def post(self, request):
-        file_list = request.FILES.getlist('image_import')
-        for x in file_list:
-            print(x.name)
-            with default_storage.open('teacher_profile/'+x.name, 'wb+') as destination:
-                for chunk in x.chunks():
-                    destination.write(chunk)
-        return redirect("teachers")
 
 
 

@@ -18,4 +18,5 @@ class BaseMessages(object):
         self.EMAIL_EXISTS = "This email is already registered. Please use a different email address."
         self.TEACHER_UPDATE = "Teacher details updated."
         self.NOT_CSV = "Unsupported format, Please upload a csv file."
+        self.SUBJECT_DATA_EXISTS = "Could not delete this subject, already assigned to a teacher."
 

@@ -12,12 +12,8 @@ from django.views import View
 from teachers.models import Subjects, Teachers
 
 
-
-
-
 @method_decorator(login_required, name="dispatch")
 class DashboradView(generic.TemplateView):
-
     """
     Dashboard view for users who have logged in, Others will be redirected to the Login page.
     """
@@ -32,7 +28,6 @@ class DashboradView(generic.TemplateView):
             return context
 
 class LoginView(generic.TemplateView):
-
     """
     User Login view. after login success, user will be redirected to the dashborad.
     """
